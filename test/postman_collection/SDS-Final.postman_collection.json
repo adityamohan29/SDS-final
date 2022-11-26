@@ -1,0 +1,220 @@
+{
+	"variables": [],
+	"info": {
+		"name": "SDS-Final",
+		"_postman_id": "d0f88462-6b23-a0d0-b252-83f6afd66d79",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "getSpatialRange",
+			"request": {
+				"url": {
+					"raw": "localhost:9000/getSpatialRange?latMin=33.41415667570768&lonMin=-111.92518396810091&latMax=33.414291502635706&lonMax=-111.92254858414022",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"getSpatialRange"
+					],
+					"query": [
+						{
+							"key": "latMin",
+							"value": "33.41415667570768",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "lonMin",
+							"value": "-111.92518396810091",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "latMax",
+							"value": "33.414291502635706",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "lonMax",
+							"value": "-111.92254858414022",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"lat1\": 33.41415667570768,\n    \"lon1\": -111.92518396810091,\n    \"lat2\": 33.414291502635706,\n    \"lon2\": -111.92254858414022\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "KNN",
+			"request": {
+				"url": {
+					"raw": "localhost:9000/getKNearestNeighbors?trajectoryId=0&kNeighbors=5",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"getKNearestNeighbors"
+					],
+					"query": [
+						{
+							"key": "trajectoryId",
+							"value": "0",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "kNeighbors",
+							"value": "5",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "getSpatioTemporalRange",
+			"request": {
+				"url": {
+					"raw": "localhost:9000/getSpatioTemporalRange?latMin=33.41415667570768&lonMin=-111.92518396810091&latMax=33.414291502635706&lonMax=-111.92254858414022&timeMin=1664511371&timeMax=1664512676",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"getSpatioTemporalRange"
+					],
+					"query": [
+						{
+							"key": "latMin",
+							"value": "33.41415667570768",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "lonMin",
+							"value": "-111.92518396810091",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "latMax",
+							"value": "33.414291502635706",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "lonMax",
+							"value": "-111.92254858414022",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "timeMin",
+							"value": "1664511371",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "timeMax",
+							"value": "1664512676",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "getKNN",
+			"request": {
+				"url": {
+					"raw": "localhost:9000/getSpatioTemporalRange?latMin=33.41415667570768&lonMin=-111.92518396810091&latMax=33.414291502635706&lonMax=-111.92254858414022&timeMin=1664511371&timeMax=1664512676",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"getSpatioTemporalRange"
+					],
+					"query": [
+						{
+							"key": "latMin",
+							"value": "33.41415667570768",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "lonMin",
+							"value": "-111.92518396810091",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "latMax",
+							"value": "33.414291502635706",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "lonMax",
+							"value": "-111.92254858414022",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "timeMin",
+							"value": "1664511371",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "timeMax",
+							"value": "1664512676",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
