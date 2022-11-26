@@ -61,13 +61,15 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 
 
     print("\n============FLAT DF================\n")
-    val concatArray = udf((value: Seq[Seq[Long]]) => {
-      value.flatten.mkString(",")
+    val concatArray = udf((value: Seq[Long]) => {
+      value.mkString("[", ",", "]")
     })
-    val flat_df = df2.withColumn("location", concatArray(df2.col("location")))
-    flat_df.show()
-    flat_df.printSchema()
-    print("\n============================\n")
+
+    val concatArrayTwo = udf((value: Seq[Seq[Long]]) => {
+      value.map(_.mkString("[", ",", "]")).mkString("[", ",", "]")
+    })
+
+    val flat_df = df2.withColumn("location", concatArrayTwo(df2.col("location"))).withColumn("timestamp", concatArray(df2.col("timestamp")))
 
 
 //    val df3 = df2.toJSON
@@ -81,7 +83,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     }
 
     var output = ListBuffer[String]()
-    val collected = df2.collectAsList()
+    val collected = flat_df.collectAsList()
 
     for (k <- collected.asScala){
       output += convertRowToJSON(k)
@@ -93,7 +95,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 //        Json.fromJson[getSpatialRangeDTO](_).asOpt
 //      )
 //    Created(Json.toJson(spatialRangeQuery))
-    Created("["+output.mkString(",")+"]")
+    Created("{\"output\":["+output.mkString(",")+"]}")
   }
 
 
