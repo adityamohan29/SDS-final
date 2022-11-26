@@ -5,11 +5,17 @@ import org.apache.sedona.sql.utils.SedonaSQLRegistrator
 import org.apache.sedona.viz.core.Serde.SedonaVizKryoRegistrator
 import org.apache.sedona.viz.sql.utils.SedonaVizRegistrator
 import org.apache.spark.serializer.KryoSerializer
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Row, SparkSession}
 import play.api.libs.json._
 import play.api.mvc._
-
+import org.apache.spark.sql.functions.{col, to_json}
+import scala.collection.mutable.ListBuffer
+import scala.util.parsing.json.JSONObject
+import scala.collection.JavaConverters._
 import javax.inject._
+import scala.collection.mutable
+
+
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
@@ -42,20 +48,36 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     SedonaSQLRegistrator.registerAll(spark)
     SedonaVizRegistrator.registerAll(spark)
 
-    val file_path = "/Users/adityamohan/Documents/CSE594-Spatial/Project-Phase-1/SDSE-Phase-1/data/simulated_trajectories.json"
+    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     print(" df1 ",df)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,lat1,lon1,lat2,lon2)
+
     print("dataframe, ",df2)
+    print(df2.collectAsList().size())
+    print("\n============================\n")
 
+    // print(df2.collectAsList())
 
+    def convertRowToJSON(row: Row): String = {
+      val m = row.getValuesMap(row.schema.fieldNames)
+      JSONObject(m).toString()
+    }
 
+    var output = ListBuffer[String]()
+    val collected = df2.collectAsList()
+
+    for (k <- collected.asScala){
+      output += convertRowToJSON(k)
+    }
+    print(output.mkString(","))
     //dummy json respons
-    val spatialRangeQuery: Option[getSpatialRangeDTO] =
-      content.asJson.flatMap(
-        Json.fromJson[getSpatialRangeDTO](_).asOpt
-      )
-    Created(Json.toJson(spatialRangeQuery))
+//    val spatialRangeQuery: Option[getSpatialRangeDTO] =
+//      content.asJson.flatMap(
+//        Json.fromJson[getSpatialRangeDTO](_).asOpt
+//      )
+//    Created(Json.toJson(spatialRangeQuery))
+    Created(output.mkString(","))
   }
 
 
