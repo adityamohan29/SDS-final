@@ -11,3 +11,4 @@ GET /getSpatialRange                     models.spatialQueryController.getSpatia
 
 
 GET    /getSpatioTemporalRange                     models.spatialQueryController.getSpatioTemporalRangeController(timeMin:Option[Long],timeMax:Option[Long],latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double])
+GET    /getSpatioTemporalRange                     models.spatialQueryController.getSpatioTemporalRangeController(timeMin:Option[Long],timeMax:Option[Long],latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double])

@@ -46,7 +46,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
       sparkInit()
     }
 
-    val file_path = "/Users/adityamohan/Documents/CSE594-Spatial/Project-Phase-1/SDSE-Phase-1/data/simulated_trajectories.json"
+    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     print(" df1 ",df)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,latMin.get,lonMin.get ,latMax.get ,lonMax.get)
@@ -76,7 +76,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     }
     print(output.mkString(","))
 
-    Created(Json.toJson(Json.parse("{\"output\":["+output.mkString(",")+"]}")))
+    Ok(Json.toJson(Json.parse("{\"output\":["+output.mkString(",")+"]}")))
   }
 
 
@@ -85,7 +85,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
       sparkInit()
     }
 
-    val file_path = "/Users/adityamohan/Documents/CSE594-Spatial/Project-Phase-1/SDSE-Phase-1/data/simulated_trajectories.json"
+    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
     val df2 = ManageTrajectory.getSpatioTemporalRange(spark, df, timeMin.get, timeMax.get, latMin.get, lonMin.get, latMax.get, lonMax.get)
@@ -120,7 +120,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 //            Json.fromJson[getSpatialRangeDTO](_).asOpt
 //          )
 //        Created(Json.toJson(spatialRangeQuery))
-    Created(Json.toJson(Json.parse("{\"output\":[" + output.mkString(",") + "]}")))
+    Ok(Json.toJson(Json.parse("{\"output\":[" + output.mkString(",") + "]}")))
   }
 
 
