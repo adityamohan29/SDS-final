@@ -8,7 +8,8 @@ import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.{Row, SparkSession}
 import play.api.libs.json._
 import play.api.mvc._
-import org.apache.spark.sql.functions.{col, to_json}
+import org.apache.spark.sql.functions.{col, to_json, udf}
+
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.json.JSONObject
 import scala.collection.JavaConverters._
@@ -52,11 +53,26 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     print(" df1 ",df)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,lat1,lon1,lat2,lon2)
+//    print("\n============================\n")
+//    df2.show()
+//    df2.printSchema()
+//    print("dataframe, ",df2)
+//    print("\n============================\n")
 
-    print("dataframe, ",df2)
-    print(df2.collectAsList().size())
+
+    print("\n============FLAT DF================\n")
+    val concatArray = udf((value: Seq[Seq[Long]]) => {
+      value.flatten.mkString(",")
+    })
+    val flat_df = df2.withColumn("location", concatArray(df2.col("location")))
+    flat_df.show()
+    flat_df.printSchema()
     print("\n============================\n")
 
+
+//    val df3 = df2.toJSON
+//    df3.collect()
+//    print(df3)
     // print(df2.collectAsList())
 
     def convertRowToJSON(row: Row): String = {
@@ -77,7 +93,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 //        Json.fromJson[getSpatialRangeDTO](_).asOpt
 //      )
 //    Created(Json.toJson(spatialRangeQuery))
-    Created(output.mkString(","))
+    Created("["+output.mkString(",")+"]")
   }
 
 
