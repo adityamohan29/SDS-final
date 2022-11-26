@@ -26,9 +26,27 @@ import scala.collection.mutable
 class spatialQueryController @Inject()(val controllerComponents: ControllerComponents)
   extends BaseController {
 
+  var spark: SparkSession = null
+
+  def sparkInit(): Unit ={
+    spark = SparkSession.builder()
+      .config("spark.serializer", classOf[KryoSerializer].getName)
+      .config("spark.kryo.registrator", classOf[SedonaVizKryoRegistrator].getName)
+      .master("local[*]")
+      .appName("SDSE-Phase-1-Apache-Sedona")
+      .getOrCreate()
+
+    SedonaSQLRegistrator.registerAll(spark)
+    SedonaVizRegistrator.registerAll(spark)
+  }
+
 
   implicit val getSpatialRangeDTO = Json.format[getSpatialRangeDTO]
   def getSpatialRangeController() = Action { implicit request =>
+    if(spark == null){
+      sparkInit()
+    }
+
     val content = request.body
     val jsonString = content.asJson.get.toString()
     val json: JsValue = Json.parse(jsonString)
@@ -38,17 +56,6 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     val lon1 = (json \ "lon1").as[Double]
     val lat2 = (json \ "lat2").as[Double]
     val lon2 = (json \ "lon2").as[Double]
-
-    val spark: SparkSession = SparkSession.builder()
-      .config("spark.serializer", classOf[KryoSerializer].getName)
-      .config("spark.kryo.registrator", classOf[SedonaVizKryoRegistrator].getName)
-      .master("local[*]")
-      .appName("SDSE-Phase-1-Apache-Sedona")
-      .getOrCreate()
-
-    SedonaSQLRegistrator.registerAll(spark)
-    SedonaVizRegistrator.registerAll(spark)
-
     val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     print(" df1 ",df)
@@ -60,17 +67,16 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 //    print("\n============================\n")
 
 
-    print("\n============FLAT DF================\n")
-    val concatArray = udf((value: Seq[Long]) => {
+    // print("\n============FLAT DF================\n")
+    val concatArrayTimestamps = udf((value: Seq[Long]) => {
       value.mkString("[", ",", "]")
     })
 
-    val concatArrayTwo = udf((value: Seq[Seq[Long]]) => {
+    val concatArrayLocation = udf((value: Seq[Seq[Long]]) => {
       value.map(_.mkString("[", ",", "]")).mkString("[", ",", "]")
     })
 
-    val flat_df = df2.withColumn("location", concatArrayTwo(df2.col("location"))).withColumn("timestamp", concatArray(df2.col("timestamp")))
-
+    val flat_df = df2.withColumn("location", concatArrayLocation(df2.col("location"))).withColumn("timestamp", concatArrayTimestamps(df2.col("timestamp")))
 
 //    val df3 = df2.toJSON
 //    df3.collect()
@@ -95,7 +101,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 //        Json.fromJson[getSpatialRangeDTO](_).asOpt
 //      )
 //    Created(Json.toJson(spatialRangeQuery))
-    Created("{\"output\":["+output.mkString(",")+"]}")
+    Created(Json.toJson(Json.parse("{\"output\":["+output.mkString(",")+"]}")))
   }
 
 
