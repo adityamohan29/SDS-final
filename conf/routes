@@ -8,7 +8,5 @@
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 GET /getSpatialRange                     models.spatialQueryController.getSpatialRangeController(latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double])
-
-
 GET    /getSpatioTemporalRange                     models.spatialQueryController.getSpatioTemporalRangeController(timeMin:Option[Long],timeMax:Option[Long],latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double])
-GET    /getSpatioTemporalRange                     models.spatialQueryController.getSpatioTemporalRangeController(timeMin:Option[Long],timeMax:Option[Long],latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double])
+GET    /getKNearestNeighbors                    models.spatialQueryController.getKNNTrajectoryController(trajectoryId:Option[Long], kNeighbors:Option[Int])

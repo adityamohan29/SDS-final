@@ -5,7 +5,7 @@ import org.apache.sedona.sql.utils.SedonaSQLRegistrator
 import org.apache.sedona.viz.core.Serde.SedonaVizKryoRegistrator
 import org.apache.sedona.viz.sql.utils.SedonaVizRegistrator
 import org.apache.spark.serializer.KryoSerializer
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{collect_list, udf}
 import org.apache.spark.sql.{Row, SparkSession}
 import play.api.libs.json._
 import play.api.mvc._
@@ -80,7 +80,26 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
   }
 
 
-  def getSpatioTemporalRangeController(timeMin:Option[Long],timeMax:Option[Long],latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double]) = Action { implicit request =>
+  def getKNNTrajectoryController(trajectoryId:Option[Long], kNeighbors:Option[Int]) = Action { implicit request =>
+    if (spark == null) {
+      sparkInit()
+    }
+
+    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
+    val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
+    print(" df1 ", df)
+
+    print("\n============KNN DF================\n")
+    val df2 = ManageTrajectory.getKNNTrajectory(spark, df, trajectoryId.get, kNeighbors.get)
+    df2.show()
+
+    var output = df2.select("trajectory_id").collect().map(_(0)).toList
+
+    print(output.mkString(","))
+    Ok(Json.toJson(Json.parse("{\"output\":[" + output.mkString(",") + "]}")))
+  }
+
+  def getSpatioTemporalRangeController(timeMin: Option[Long], timeMax: Option[Long], latMin: Option[Double], lonMin: Option[Double], latMax: Option[Double], lonMax: Option[Double]) = Action { implicit request =>
     if (spark == null) {
       sparkInit()
     }
@@ -115,11 +134,11 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     }
     print(output.mkString(","))
     //dummy json respons
-//        val spatialRangeQuery: Option[getSpatialRangeDTO] =
-//          content.asJson.flatMap(
-//            Json.fromJson[getSpatialRangeDTO](_).asOpt
-//          )
-//        Created(Json.toJson(spatialRangeQuery))
+    //        val spatialRangeQuery: Option[getSpatialRangeDTO] =
+    //          content.asJson.flatMap(
+    //            Json.fromJson[getSpatialRangeDTO](_).asOpt
+    //          )
+    //        Created(Json.toJson(spatialRangeQuery))
     Ok(Json.toJson(Json.parse("{\"output\":[" + output.mkString(",") + "]}")))
   }
 
