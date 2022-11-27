@@ -7,6 +7,8 @@ import org.apache.sedona.viz.sql.utils.SedonaVizRegistrator
 import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.functions.{collect_list, udf}
 import org.apache.spark.sql.{Row, SparkSession}
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -48,35 +50,23 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 
     val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
-    print(" df1 ",df)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,latMin.get,lonMin.get ,latMax.get ,lonMax.get)
 
+    val output = df2
+      .collect
+      .map(
+        row => df2
+          .columns
+          .foldLeft(Map.empty[String, Any])
+          (
+            (acc, item) => acc + (item -> row.getAs[Any](item))
+          )
+      )
 
-    // print("\n============FLAT DF================\n")
-    val concatArrayTimestamps = udf((value: Seq[Long]) => {
-      value.mkString("[", ",", "]")
-    })
+    implicit val formats: DefaultFormats = DefaultFormats
+    val json = Serialization.write(output)
 
-    val concatArrayLocation = udf((value: Seq[Seq[Long]]) => {
-      value.map(_.mkString("[", ",", "]")).mkString("[", ",", "]")
-    })
-
-    val flat_df = df2.withColumn("location", concatArrayLocation(df2.col("location"))).withColumn("timestamp", concatArrayTimestamps(df2.col("timestamp")))
-
-    def convertRowToJSON(row: Row): String = {
-      val m = row.getValuesMap(row.schema.fieldNames)
-      JSONObject(m).toString()
-    }
-
-    var output = ListBuffer[String]()
-    val collected = flat_df.collectAsList()
-
-    for (k <- collected.asScala){
-      output += convertRowToJSON(k)
-    }
-    print(output.mkString(","))
-
-    Ok(Json.toJson(Json.parse("{\"output\":["+output.mkString(",")+"]}")))
+    Ok(json).as("application/json")
   }
 
 
