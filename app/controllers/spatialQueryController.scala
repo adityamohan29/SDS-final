@@ -91,8 +91,11 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
 
+
+
     print("\n============KNN DF================\n")
     val df2 = ManageTrajectory.getKNNTrajectory(spark, df, trajectoryId.get, kNeighbors.get)
+    df2.show(false)
     val output = df2
       .collect
       .map(

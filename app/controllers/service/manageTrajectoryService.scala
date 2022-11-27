@@ -13,7 +13,7 @@ object ManageTrajectory {
   def loadTrajectoryData(spark: SparkSession,filePath: String): DataFrame =
   {
     var trajectoryDf = spark.read.option("multiline","true").format("json").load(path = filePath)
-
+    trajectoryDf.createOrReplaceTempView("initialTable")
     trajectoryDf = trajectoryDf.select(
       org.apache.spark.sql.functions.explode(trajectoryDf.col("trajectory")).as("trajectory"),
       trajectoryDf.col("trajectory_id").as("trajectory_id"),
@@ -83,15 +83,27 @@ object ManageTrajectory {
   {
     /* TO DO */
 
+
     dfTrajectory.createOrReplaceTempView("inputtable")
     var query =
       s"""
-         SELECT  i1.trajectory_id from inputtable as i1 cross join inputtable as i2 where i2.trajectory_id = $trajectoryId AND i1.trajectory_id!= $trajectoryId group by i1.trajectory_id order by min(ST_DISTANCE(i1.point,i2.point)) limit $neighbors
-        """
+     SELECT  i1.trajectory_id from inputtable as i1 cross join inputtable as i2 where i2.trajectory_id = $trajectoryId AND i1.trajectory_id!= $trajectoryId group by i1.trajectory_id order by min(ST_DISTANCE(i1.point,i2.point)) limit $neighbors
+    """
+    //i1.trajectory_id, i1.location from inputtable as i1 cross join inputtable as i2 where i2.trajectory_id = $trajectoryId AND i1.trajectory_id!= $trajectoryId group by i1.trajectory_id order by min(ST_DISTANCE(i1.point,i2.point)) limit $neighbors
     var knnDf = spark.sql(query.stripMargin)
-    knnDf.show(truncate = false)
 
-    knnDf
+    knnDf.createOrReplaceTempView("inputtable2")
+    var query2 =
+      s"""
+     SELECT distinct i2.trajectory_id,trajectory from inputtable2 i1, initialTable i2 where i1.trajectory_id = i2.trajectory_id
+    """
+    var finalKNNDf = spark.sql(query2.stripMargin)
+
+    finalKNNDf = finalKNNDf.select(finalKNNDf.col("trajectory.location"))
+    //    trialDf = trialDf.select(
+    //      org.apache.spark.sql.functions.explode(trialDf.col("i1.trajectory_id")))
+    //trialDf.show(100,truncate = false)
+    finalKNNDf
   }
 
 
