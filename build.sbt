@@ -41,6 +41,8 @@ libraryDependencies ++= Seq(
   //"org.datasyslab" % "geotools-wrapper" % geotoolsVersion % "compile"
 )
 
+libraryDependencies += "com.lihaoyi" %% "upickle" % "0.9.5"
+
 assemblyMergeStrategy in assembly := {
   case PathList("org.apache.sedona", "sedona-core", xs@_*) => MergeStrategy.first
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard

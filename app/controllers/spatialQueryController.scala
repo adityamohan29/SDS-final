@@ -5,17 +5,15 @@ import org.apache.sedona.sql.utils.SedonaSQLRegistrator
 import org.apache.sedona.viz.core.Serde.SedonaVizKryoRegistrator
 import org.apache.sedona.viz.sql.utils.SedonaVizRegistrator
 import org.apache.spark.serializer.KryoSerializer
-import org.apache.spark.sql.functions.{collect_list, udf}
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization
 import play.api.libs.json._
 import play.api.mvc._
+
 import java.io.PrintWriter
 import javax.inject._
 import scala.collection.JavaConverters._
-import scala.collection.mutable.ListBuffer
-import scala.util.parsing.json.JSONObject
 
 
 /**
@@ -41,12 +39,14 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     SedonaVizRegistrator.registerAll(spark)
   }
   def addNewDataset(fileName:Option[String]) = Action { implicit request =>
+
+
     if (spark == null) {
       sparkInit()
     }
     val content = request.body
     val jsonObject = content.asJson
-    new PrintWriter("data/" + fileName.get + ".json") { write(Json.toJson(jsonObject).toString()); close }
+    new PrintWriter("data/" + fileName.get) { write(Json.toJson(jsonObject).toString()); close }
     Ok
   }
 
