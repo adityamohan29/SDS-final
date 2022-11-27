@@ -11,7 +11,7 @@ import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization
 import play.api.libs.json._
 import play.api.mvc._
-
+import java.io.PrintWriter
 import javax.inject._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -40,15 +40,23 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     SedonaSQLRegistrator.registerAll(spark)
     SedonaVizRegistrator.registerAll(spark)
   }
+  def addNewDataset(fileName:Option[String]) = Action { implicit request =>
+    if (spark == null) {
+      sparkInit()
+    }
+    val content = request.body
+    val jsonObject = content.asJson
 
+    new PrintWriter("data/" + fileName + ".json") { write(Json.toJson(jsonObject).toString()); close }
+    Ok
+  }
 
-  implicit val getSpatialRangeDTO = Json.format[getSpatialRangeDTO]
   def getSpatialRangeController(latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double]) = Action { implicit request =>
     if(spark == null){
       sparkInit()
     }
 
-    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
+    val file_path = "data/" + lastUsedDataset + ".json"
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,latMin.get,lonMin.get ,latMax.get ,lonMax.get)
 
@@ -75,18 +83,27 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
       sparkInit()
     }
 
-    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
+    val file_path = "data/" + lastUsedDataset + ".json"
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
 
     print("\n============KNN DF================\n")
     val df2 = ManageTrajectory.getKNNTrajectory(spark, df, trajectoryId.get, kNeighbors.get)
-    df2.show()
+    val output = df2
+      .collect
+      .map(
+        row => df2
+          .columns
+          .foldLeft(Map.empty[String, Any])
+          (
+            (acc, item) => acc + (item -> row.getAs[Any](item))
+          )
+      )
 
-    var output = df2.select("trajectory_id").collect().map(_(0)).toList
+    implicit val formats: DefaultFormats = DefaultFormats
+    val json = Serialization.write(output)
 
-    print(output.mkString(","))
-    Ok(Json.toJson(Json.parse("{\"output\":[" + output.mkString(",") + "]}")))
+    Ok(json).as("application/json")
   }
 
   def getSpatioTemporalRangeController(timeMin: Option[Long], timeMax: Option[Long], latMin: Option[Double], lonMin: Option[Double], latMax: Option[Double], lonMax: Option[Double]) = Action { implicit request =>
@@ -94,42 +111,27 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
       sparkInit()
     }
 
-    val file_path = "/Users/dhanushkamath/Development/ASU_Projects/Spatial_Data_Science/sds-project-phase-1/data/simulated_trajectories.json"
+    val file_path = "data/" + lastUsedDataset + ".json"
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
     val df2 = ManageTrajectory.getSpatioTemporalRange(spark, df, timeMin.get, timeMax.get, latMin.get, lonMin.get, latMax.get, lonMax.get)
 
 
-    // print("\n============FLAT DF================\n")
-    val concatArrayTimestamps = udf((value: Seq[Long]) => {
-      value.mkString("[", ",", "]")
-    })
+    val output = df2
+      .collect
+      .map(
+        row => df2
+          .columns
+          .foldLeft(Map.empty[String, Any])
+          (
+            (acc, item) => acc + (item -> row.getAs[Any](item))
+          )
+      )
 
-    val concatArrayLocation = udf((value: Seq[Seq[Long]]) => {
-      value.map(_.mkString("[", ",", "]")).mkString("[", ",", "]")
-    })
+    implicit val formats: DefaultFormats = DefaultFormats
+    val json = Serialization.write(output)
 
-    val flat_df = df2.withColumn("location", concatArrayLocation(df2.col("location"))).withColumn("timestamp", concatArrayTimestamps(df2.col("timestamp")))
-
-    def convertRowToJSON(row: Row): String = {
-      val m = row.getValuesMap(row.schema.fieldNames)
-      JSONObject(m).toString()
-    }
-
-    var output = ListBuffer[String]()
-    val collected = flat_df.collectAsList()
-
-    for (k <- collected.asScala) {
-      output += convertRowToJSON(k)
-    }
-    print(output.mkString(","))
-    //dummy json respons
-    //        val spatialRangeQuery: Option[getSpatialRangeDTO] =
-    //          content.asJson.flatMap(
-    //            Json.fromJson[getSpatialRangeDTO](_).asOpt
-    //          )
-    //        Created(Json.toJson(spatialRangeQuery))
-    Ok(Json.toJson(Json.parse("{\"output\":[" + output.mkString(",") + "]}")))
+    Ok(json).as("application/json")
   }
 
 
