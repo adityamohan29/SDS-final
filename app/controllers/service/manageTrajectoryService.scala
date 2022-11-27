@@ -84,14 +84,11 @@ object ManageTrajectory {
     /* TO DO */
 
     dfTrajectory.createOrReplaceTempView("inputtable")
-    print("\n======KNN TABLE========\n")
-    dfTrajectory.show()
     var query =
       s"""
-         SELECT  i1.trajectory_id from inputtable as i1 cross join inputtable as i2 where i2.trajectory_id = $trajectoryId AND i1.trajectory_id!= $trajectoryId group by i1.trajectory_id, i1.point order by min(ST_DISTANCE(i1.point,i2.point)) limit $neighbors
+         SELECT  i1.trajectory_id from inputtable as i1 cross join inputtable as i2 where i2.trajectory_id = $trajectoryId AND i1.trajectory_id!= $trajectoryId group by i1.trajectory_id order by min(ST_DISTANCE(i1.point,i2.point)) limit $neighbors
         """
     var knnDf = spark.sql(query.stripMargin)
-    knnDf.createOrReplaceTempView("inputtable")
     knnDf.show(truncate = false)
 
     knnDf

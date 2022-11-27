@@ -46,8 +46,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     }
     val content = request.body
     val jsonObject = content.asJson
-
-    new PrintWriter("data/" + fileName + ".json") { write(Json.toJson(jsonObject).toString()); close }
+    new PrintWriter("data/" + fileName.get + ".json") { write(Json.toJson(jsonObject).toString()); close }
     Ok
   }
 
@@ -55,8 +54,10 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     if(spark == null){
       sparkInit()
     }
+    // TODO - Remove below fileName assignment !!!!!!
+    val fileName = "simulated_trajectories"
+    val file_path = "data/" + fileName + ".json"
 
-    val file_path = "data/" + lastUsedDataset + ".json"
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,latMin.get,lonMin.get ,latMax.get ,lonMax.get)
 
@@ -83,7 +84,10 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
       sparkInit()
     }
 
-    val file_path = "data/" + lastUsedDataset + ".json"
+    // TODO - Remove below fileName assignment !!!!!!
+    val fileName = "simulated_trajectories"
+    val file_path = "data/" + fileName + ".json"
+
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
 
@@ -111,7 +115,10 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
       sparkInit()
     }
 
-    val file_path = "data/" + lastUsedDataset + ".json"
+    // TODO - Remove below fileName assignment !!!!!!
+    val fileName = "simulated_trajectories"
+    val file_path = "data/" + fileName + ".json"
+
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
     val df2 = ManageTrajectory.getSpatioTemporalRange(spark, df, timeMin.get, timeMax.get, latMin.get, lonMin.get, latMax.get, lonMax.get)
