@@ -99,7 +99,7 @@ object ManageTrajectory {
     """
     var finalKNNDf = spark.sql(query2.stripMargin)
 
-    finalKNNDf = finalKNNDf.select(finalKNNDf.col("trajectory.location"))
+    finalKNNDf = finalKNNDf.select(finalKNNDf.col("trajectory_id"), finalKNNDf.col("trajectory.location"), finalKNNDf.col("trajectory.timestamp"))
     //    trialDf = trialDf.select(
     //      org.apache.spark.sql.functions.explode(trialDf.col("i1.trajectory_id")))
     //trialDf.show(100,truncate = false)
