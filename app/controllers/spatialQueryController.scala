@@ -39,8 +39,6 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     SedonaVizRegistrator.registerAll(spark)
   }
   def addNewDataset(fileName:Option[String]) = Action { implicit request =>
-
-
     if (spark == null) {
       sparkInit()
     }
@@ -50,13 +48,15 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     Ok
   }
 
-  def getSpatialRangeController(latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double]) = Action { implicit request =>
+  def getSpatialRangeController(latMin:Option[Double], lonMin:Option[Double], latMax:Option[Double], lonMax:Option[Double], dataset: Option[String]) = Action { implicit request =>
     if(spark == null){
       sparkInit()
     }
     // TODO - Remove below fileName assignment !!!!!!
-    val fileName = "simulated_trajectories"
-    val file_path = "data/" + fileName + ".json"
+//    val fileName = "simulated_trajectories"
+//    val file_path = "data/" + fileName + ".json"
+
+    val file_path = "data/" + dataset.get
 
     val df = ManageTrajectory.loadTrajectoryData(spark,file_path)
     val df2 = ManageTrajectory.getSpatialRange(spark,df,latMin.get,lonMin.get ,latMax.get ,lonMax.get)
@@ -79,14 +79,16 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
   }
 
 
-  def getKNNTrajectoryController(trajectoryId:Option[Long], kNeighbors:Option[Int]) = Action { implicit request =>
+  def getKNNTrajectoryController(trajectoryId:Option[Long], k:Option[Int], dataset: Option[String]) = Action { implicit request =>
     if (spark == null) {
       sparkInit()
     }
 
     // TODO - Remove below fileName assignment !!!!!!
-    val fileName = "simulated_trajectories"
-    val file_path = "data/" + fileName + ".json"
+//    val fileName = "simulated_trajectories"
+//    val file_path = "data/" + fileName + ".json"
+
+    val file_path = "data/" + dataset.get
 
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
@@ -94,7 +96,7 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
 
 
     print("\n============KNN DF================\n")
-    val df2 = ManageTrajectory.getKNNTrajectory(spark, df, trajectoryId.get, kNeighbors.get)
+    val df2 = ManageTrajectory.getKNNTrajectory(spark, df, trajectoryId.get, k.get)
     df2.show(false)
     val output = df2
       .collect
@@ -113,14 +115,16 @@ class spatialQueryController @Inject()(val controllerComponents: ControllerCompo
     Ok(json).as("application/json")
   }
 
-  def getSpatioTemporalRangeController(timeMin: Option[Long], timeMax: Option[Long], latMin: Option[Double], lonMin: Option[Double], latMax: Option[Double], lonMax: Option[Double]) = Action { implicit request =>
+  def getSpatioTemporalRangeController(timeMin: Option[Long], timeMax: Option[Long], latMin: Option[Double], lonMin: Option[Double], latMax: Option[Double], lonMax: Option[Double], dataset: Option[String]) = Action { implicit request =>
     if (spark == null) {
       sparkInit()
     }
 
     // TODO - Remove below fileName assignment !!!!!!
-    val fileName = "simulated_trajectories"
-    val file_path = "data/" + fileName + ".json"
+//    val fileName = "simulated_trajectories"
+//    val file_path = "data/" + fileName + ".json"
+
+    val file_path = "data/" + dataset.get
 
     val df = ManageTrajectory.loadTrajectoryData(spark, file_path)
     print(" df1 ", df)
